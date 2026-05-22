@@ -1,24 +1,32 @@
-import openai
-import json
 import os
+from openai import AzureOpenAI
 from dotenv import load_dotenv
 
-# Načtení klíče
 load_dotenv()
-client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def generate_website_data(company_name, industry, style):
+
+client = AzureOpenAI(
+    azure_endpoint="https://budwise-brigadnici-resource.openai.azure.com",
+    api_key=os.getenv("OPENAI_API_KEY"),
+    api_version="2024-02-15-preview"
+)
+
+def generate_website_stream(company_name, industry, style):
+    deployment_name = "gpt-5"
+    
     prompt = f"""
-    Create a content plan for a company named '{company_name}' in the '{industry}' industry.
-    The design style should be '{style}'.
-    Return ONLY a valid JSON object with these keys: 
-    "slogan", "hero_text", "features" (list of 3 items), "color_palette" (list of 3 hex codes).
+    Vytvoř HTML webovou stránku pro '{company_name}'.
+    Styl: {style}.
+    Pravidla:
+    1. Vrať pouze kód, žádné textové uvozování.
+    2. Použij velmi stručné CSS v <style> tagu.
+    3. HTML musí být validní a kompletní dokument.
+    4. Kód musí být ukončený tagem </html>.
     """
     
-    response = client.chat.completions.create(
-        model="gpt-4o",
+    return client.chat.completions.create(
+        model=deployment_name,
         messages=[{"role": "user", "content": prompt}],
-        response_format={"type": "json_object"}
+        stream=True,
+        max_completion_tokens=4000
     )
-    
-    return json.loads(response.choices[0].message.content)
