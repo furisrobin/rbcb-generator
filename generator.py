@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Slovník stylů pro AI
 STYLES = {
     "Minimalistický": "Minimalistický design, hodně bílého prostoru, elegantní fonty, jednoduchá navigace.",
     "Moderní": "Moderní vzhled, výrazné barvy, velké nadpisy, dynamické rozložení.",
@@ -21,23 +20,21 @@ client = AzureOpenAI(
     api_version="2024-02-15-preview"
 )
 
-def generate_website_stream(company_name, industry, style_key):
-    deployment_name = "gpt-5"
-    style_desc = STYLES.get(style_key, "Moderní čistý design.")
-    
+def generate_website_stream(company_name, industry, style_key, primary_color):
     prompt = f"""
-    Vytvoř kompletní HTML webovou stránku pro firmu '{company_name}' z oboru '{industry}'.
-    Designový styl: {style_key} ({style_desc}).
-    Pravidla:
-    1. Použij CDN pro Tailwind CSS (https://cdn.tailwindcss.com).
-    2. Vytvoř kompletní strukturu: Header, Hero, Služby, Kontakt, Footer.
-    3. HTML kód musí být validní a kompletní dokument.
-    4. Použij české texty odpovídající oboru.
-    5. Vrať POUZE čistý HTML kód, žádné markdown bloky (žádné ```html).
+    Vytvoř špičkovou, profesionální webovou stránku pro '{company_name}' ({industry}).
+    Styl: {style_key}.
+    
+    POŽADAVKY:
+    1. Použij Tailwind CSS CDN (https://cdn.tailwindcss.com).
+    2. Primární barva: {primary_color}. Použij ji pro tlačítka (class="bg-[{primary_color}]") a akcenty.
+    3. Typografie: Moderní bezpatkový font, velké tučné nadpisy, velkorysý padding a mezery.
+    4. Struktura: Navbar, Hero (vlevo text, vpravo placeholder), Služby (karty), Kontakt, Footer.
+    5. Vrať POUZE čistý HTML kód bez markdownu a uvozovek.
     """
     
     return client.chat.completions.create(
-        model=deployment_name,
+        model="gpt-5",
         messages=[{"role": "user", "content": prompt}],
         stream=True,
         max_completion_tokens=4000
